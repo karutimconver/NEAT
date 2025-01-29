@@ -13,8 +13,8 @@ class Link:
         """
         A connection between two different nodes of the network
 
-        :param begin: id of the previous node
-        :param end: id of the next node
+        :param begin: id of the start node
+        :param end: id of the target node
         :param weight: weight of the connection
         """
         self.weight: float = weight
@@ -23,6 +23,7 @@ class Link:
 
 
 class Node:
+    input: list = []
     output: int | float = 0
 
     def __init__(self, activation: str, _id: int) -> None:

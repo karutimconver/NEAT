@@ -13,8 +13,8 @@ class LinkGene:
         """
         A gene that encodes a connection.
 
-        :param begin: start neuron
-        :param end: target neuron
+        :param begin: innovation number of the start neuron
+        :param end: innovation number of the target neuron
         :param innovation: innovation number of the gene
         """
         self.end: int = end
@@ -40,7 +40,6 @@ class NodeGene:
         gene
         :param layer: layer of the neuron.
         """
-        self.output: float = 0
         self.innovation: int = innovation
         self.layer: int = layer
 
@@ -49,10 +48,13 @@ class NodeGene:
         else:
             self.activation: Any = "None"
 
+    def __eq__(self, other: Any):
+        return isinstance(other, type(self)) and other.innovation == self.innovation
+
 
 NodeCount: int = 0
 LinkCount: int = 0
-LinkGenes: list[LinkGene] = []
+LinkGenes: list[LinkGene] = []      # All the link genes
 
 
 class Genome:
@@ -124,7 +126,7 @@ class Genome:
         self.layers = 2
         NodeCount = self.NodeCount
 
-    def mutate(self, amount=1) -> None:
+    def mutate(self, amount: int = 1) -> None:
         """
         Mutates the genome based on the configuration of the algorithm. The configuration is present on the conf file.
 
@@ -171,9 +173,9 @@ class Genome:
         gene.enabled = False
         self.Disabled.append(gene)
 
-    def m_add_link(self, depth=800):
+    def m_add_link(self, depth: int = 800):
         if depth == 0:
-            raise RecursionError("Unable to create a new link. Depth Limit exceeded!")
+            raise RecursionError("Unable to create a new link. Depth limit exceeded!")
 
         global LinkCount
         # Choosing 2 valid nodes
@@ -194,34 +196,48 @@ class Genome:
             self.LinkGenes[self.LinkGenes.index(link)].enabled = True
         else:
             LinkCount += 1
-            # Checking if the link already exists in this generation
+
+            # Checking if the link already exists in this generation and adding it to the existing link genes otherwise
             if link in LinkGenes:
                 link.innovation = LinkGenes[LinkGenes.index(link)].innovation
+            else:
+                LinkGenes.append(link)
 
             self.LinkGenes = self.LinkGenes + (link, )
 
     def m_remove_node(self):
-        node = choice(self.NodeGenes)
+        # Choosing a node from a hidden layer
+        node: NodeGene = choice(self.NodeGenes)
+        while node.layer == -1 or node.layer == 1:
+            node: NodeGene = choice(self.NodeGenes)
+
+        self.NodeGenes = tuple(n for n in self.NodeGenes if n != node)
+
+        for link in self.LinkGenes:
+            if link.begin == node.innovation or link.end == node.innovation:
+                self.LinkGenes = tuple(l for l in self.LinkGenes if l != link)
 
         raise NotImplementedError("Remove node mutation not implemented")
 
     def m_add_node(self):
         global NodeCount
         global LinkCount
-        # Picking a random gene
+        # Picking a random link that is enabled
         gene: LinkGene = choice(self.LinkGenes)
+        while gene in self.Disabled:
+            gene: LinkGene = choice(self.LinkGenes)
 
         # Adding the node
-        node = NodeGene(NodeCount + 1, self.NodeGenes[gene.begin - 1].layer + 1)
+        node: NodeGene = NodeGene(NodeCount + 1, self.NodeGenes[gene.begin - 1].layer + 1)
         NodeCount += 1
-        self.NodeGenes = self.NodeGenes + (node,)
+        self.NodeGenes = self.NodeGenes + (node, )
 
         # Adjust the links
         gene.enabled = False
         self.Disabled.append(gene)
-        self.LinkGenes = self.LinkGenes + (LinkGene(gene.begin, node.innovation, LinkCount + 1, 1),)
+        self.LinkGenes = self.LinkGenes + (LinkGene(gene.begin, node.innovation, LinkCount + 1, 1), )
         LinkCount += 1
-        self.LinkGenes = self.LinkGenes + (LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight),)
+        self.LinkGenes = self.LinkGenes + (LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight), )
         LinkCount += 1
 
     def m_activation(self):

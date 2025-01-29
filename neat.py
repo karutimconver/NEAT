@@ -6,6 +6,7 @@ from network import Network
 from gene import Genome
 from conf import *
 
+
 class Individual:
     def __init__(self, inputs: int, outputs: int) -> None:
         """
@@ -59,9 +60,10 @@ class NEAT:
 
     def update(self, inputs: tuple[float | int]) -> None:
         """
-        This function is responsible for training  handling everything the algorithm needs. This function should be could every program cycle.
+        This function is responsible for training and handling everything the algorithm needs. This function should be called every program cycle.
         :param inputs:
         """
+        raise NotImplementedError()
 
     def compute(self, inputs: tuple[float | int]) -> None:
         for individual in self.population:
