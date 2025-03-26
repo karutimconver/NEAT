@@ -54,12 +54,12 @@ class NodeGene:
 
 NodeCount: int = 0
 LinkCount: int = 0
-LinkGenes: list[LinkGene] = []      # All the link genes
+AllLinkGenes: list = list()      # All the link genes
 
 
 class Genome:
-    NodeGenes: tuple = tuple()
-    LinkGenes: tuple = tuple()
+    NodeGenes: dict = dict()
+    LinkGenes: dict = dict()
     Disabled: list = list()
     NodeCount: int = 0
 
@@ -78,15 +78,15 @@ class Genome:
 
         # create the bias neuron if enabled
         if BiasNeurons:
-            self.NodeGenes = self.NodeGenes + (NodeGene(1, 1), )
+            self.NodeGenes["1"] = NodeGene(1, 1)
             self.NodeCount += 1
 
         # create input and output neurons
         for i in range(0, self.inputs+self.outputs):
             if i < self.inputs:
-                self.NodeGenes = self.NodeGenes + (NodeGene(self.NodeCount + 1, 1), )
+                self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, 1)
             else:
-                self.NodeGenes = self.NodeGenes + (NodeGene(self.NodeCount + 1, -1), )
+                self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, -1)
 
             self.NodeCount += 1
 
@@ -96,13 +96,13 @@ class Genome:
                 NewGene = LinkGene(1, self.outputs+i+self.inputs, i + 1)      # Creating a new gene
 
                 # Check if the gene exists to avoid duplicates with different innovation numbers
-                if NewGene not in LinkGenes:
+                if NewGene not in AllLinkGenes:
                     LinkCount += 1
-                    LinkGenes.append(NewGene)
+                    AllLinkGenes.append(NewGene)
                 else:
-                    NewGene.innovation = LinkGenes[LinkGenes.index(NewGene)].innovation
+                    NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
 
-                self.LinkGenes = self.LinkGenes + (NewGene, )                       # Appending the new gene
+                self.LinkGenes[str(NewGene.innovation)] = NewGene                    # Appending the new gene
 
         # Pre connect input neurons to output neurons if enabled
         if ConnectInputs:
@@ -113,13 +113,13 @@ class Genome:
                 NewGene = LinkGene(i+1, randint(1, self.outputs) + self.inputs + bias_neurons, LinkCount + 1)
 
                 # Check if the gene exists to avoid duplicates with different innovation numbers
-                if NewGene not in LinkGenes:
+                if NewGene not in AllLinkGenes:
                     LinkCount += 1
-                    LinkGenes.append(NewGene)
+                    AllLinkGenes.append(NewGene)
                 else:
-                    NewGene.innovation = LinkGenes[LinkGenes.index(NewGene)].innovation
+                    NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
 
-                self.LinkGenes = self.LinkGenes + (NewGene, )                       # Appending the new gene
+                self.LinkGenes[str(NewGene.innovation)] = NewGene                       # Appending the new gene
 
             self.inputs += bias_neurons
 
@@ -249,12 +249,12 @@ class Genome:
         self.NodeGenes[gene_index].activation = activation
 
     def __str__(self) -> str:
-        string: str = "Link Genes:\nbegin\t|\tend\t  |\tenabled\t|   innovation\n"
-        string += "".join(f"  {gene.begin : <7} {gene.end : ^8} {gene.enabled : ^9}|{gene.innovation : >8}\n" for gene in self.LinkGenes)
+        string: str = "\nNode Genes:\nlayer\t|\tactivation\t|\tinnovation\n"
+        string += "".join(f"  {gene.layer : <12} {str(gene.activation) : <9}|{gene.innovation : >8}\n" for gene in self.NodeGenes.values())
 
         string += "\n" + "-" * 40 + "\n"
 
-        string += "\nNode Genes:\nlayer\t|\tactivation\t|\tinnovation\n"
-        string += "".join(f"  {gene.layer : <12} {str(gene.activation) : <9}|{gene.innovation : >8}\n" for gene in self.NodeGenes)
+        string += "Link Genes:\nbegin\t|\tend\t  |\tenabled\t|   innovation\n"
+        string += "".join(f"  {gene.begin : <7} {gene.end : ^8} {gene.enabled : ^9}|{gene.innovation : >8}\n" for gene in self.LinkGenes.values())
 
         return string
