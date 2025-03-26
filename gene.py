@@ -9,14 +9,18 @@ seed()
 
 
 class LinkGene:
-    def __init__(self, begin: int, end: int, innovation: int, weight: float = uniform(-1, 1)) -> None:
+    def __init__(self, begin: int, end: int, innovation: int, weight: [float | None] = None) -> None:
         """
         A gene that encodes a connection.
 
         :param begin: innovation number of the start neuron
         :param end: innovation number of the target neuron
         :param innovation: innovation number of the gene
+        :param wweight: *optional. Wight of the link. If none is given, a random number between -1 and 1 will be used
         """
+        if weight is None:
+            weight = uniform(-1, 1)
+
         self.end: int = end
         self.begin: int = begin
         self.weight: float = weight                               # weight of the connection
