@@ -16,10 +16,10 @@ class LinkGene:
         :param begin: innovation number of the start neuron
         :param end: innovation number of the target neuron
         :param innovation: innovation number of the gene
-        :param weight: Optional. Weight of the link. If none is given a random number between -1 and 1 will be used
+        :param weight: *optional. Weight of the link. If none is given a random number between -1 and 1 will be used
         """
         if weight is None:
-            weight = uniform(-1,1)
+            weight = uniform(-1, 1)
 
         self.end: int = end
         self.begin: int = begin
