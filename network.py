@@ -123,6 +123,6 @@ class Network:
     def __str__(self) -> str:
         s: str = ""
         for link in self.links:
-            s += f"{link.begin}------------{link.end}\n"
+            s += f"{link.begin}------{link.weight}------{link.end}\n"
 
         return s
