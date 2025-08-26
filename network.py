@@ -47,20 +47,20 @@ class Node:
 
 
 class Network:
-    def __init__(self, NodeGenes: tuple, LinkGenes: tuple, inputs: int, outputs) -> None:
+    def __init__(self, NodeGenes: dict, LinkGenes: dict, inputs: int, outputs) -> None:
         """
         The phenotype of an individual. This class creates the actual network that does the computations based
         on the genome provided. All the function arguments should be taken from the genome of a given individual.
 
-        :param NodeGenes: A tuple containing all the node genes of the network.
-        :param LinkGenes: A tuple containing all the link genes of the network.
+        :param NodeGenes: A dictionary containing all the node genes of the network.
+        :param LinkGenes: A dictionary containing all the link genes of the network.
         :param inputs: The number of input nodes
         :param outputs: The number of output nodes
         """
         self.inputs: int = inputs               # number of input nodes
         self.outputs: int = outputs             # number of output nodes
-        self.nodes: list = [Node(gene.activation, gene.innovation) for gene in NodeGenes]
-        self.links: list = [Link(gene.begin, gene.end, gene.weight) for gene in LinkGenes if gene.enabled]
+        self.nodes: list = [Node(gene.activation, gene.innovation) for gene in NodeGenes.values()]
+        self.links: list = [Link(gene.begin, gene.end, gene.weight) for gene in LinkGenes.values() if gene.enabled]
 
         self.links: tuple = self.sort_links(self.links)
 

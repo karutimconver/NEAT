@@ -7,8 +7,8 @@ BiasNeurons: bool = True                        # Allows bias neurons
 DefaultActivationFunction: str = "sigmoid"      # Default activation function for hidden layers
 
 MutationChances: dict[str, float] = {"weight": 0,
-                                     "remove_link": 50,
-                                     "add_link": 50,
+                                     "remove_link": 100,
+                                     "add_link": 0,
                                      "remove_node": 0,
                                      "add_node": 0,
                                      "activation": 0}

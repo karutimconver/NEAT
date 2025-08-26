@@ -171,9 +171,11 @@ class Genome:
         gene.weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
 
     def m_remove_link(self):
-        gene: LinkGene = choice(self.LinkGenes)
-        while gene in self.Disabled:
-            gene = choice(self.LinkGenes)
+        c = 0
+        gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
+        while gene in self.Disabled and c < 100:
+            gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
+            c += 1
         gene.enabled = False
         self.Disabled.append(gene)
 
