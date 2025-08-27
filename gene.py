@@ -167,8 +167,8 @@ class Genome:
             self.mutate(amount - 1)
 
     def m_weight(self):
-        gene: LinkGene = choice(list(self.LinkGenes.values()))
-        gene.weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
+        gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
+        self.LinkGenes[str(gene.innovation)].weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
 
     def m_remove_link(self):
         enabled = [gene for n, gene in self.LinkGenes.items() if gene.enabled]
