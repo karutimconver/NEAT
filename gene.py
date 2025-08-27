@@ -171,13 +171,11 @@ class Genome:
         gene.weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
 
     def m_remove_link(self):
-        c = 0
-        gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
-        while gene in self.Disabled and c < 100:
-            gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
-            c += 1
-        gene.enabled = False
-        self.Disabled.append(gene)
+        enabled = [gene for n, gene in self.LinkGenes.items() if gene.enabled]
+        if len(enabled) > 0:
+            gene: LinkGene = choice(enabled)
+            self.LinkGenes[str(gene.innovation)].enabled = False
+            self.Disabled.append(gene)
 
     def m_add_link(self, depth: int = 800):
         if depth == 0:

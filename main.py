@@ -15,3 +15,4 @@ for c in range(0, 100):
 
 
 print(individual1.genome)
+print(individual1.network)
