@@ -62,13 +62,13 @@ AllLinkGenes: list = list()      # All the link genes
 
 
 class Genome:
-    NodeGenes: dict = dict()
-    LinkGenes: dict = dict()
-    Disabled: list = list()
-    NodeCount: int = 0
-
     # noinspection PyPep8Naming
     def __init__(self, inputs: int, outputs: int) -> None:
+        self.NodeGenes: dict = dict()
+        self.LinkGenes: dict = dict()
+        self.Disabled: list = list()
+        self.NodeCount: int = 0
+
         """
         The Genome of an individual. This class creates an object containing the information to build a network.
 
@@ -183,31 +183,31 @@ class Genome:
 
         global LinkCount
         # Choosing 2 valid nodes
-        node1: NodeGene = choice(self.NodeGenes)
+        node1: NodeGene = choice(list(self.NodeGenes.values()))
         while node1.layer == -1:
-            node1: NodeGene = choice(self.NodeGenes)
+            node1: NodeGene = choice(list(self.NodeGenes.values()))
 
-        node2: NodeGene = choice(self.NodeGenes)
+        node2: NodeGene = choice(list(self.NodeGenes.values()))
         while -1 < node2.layer <= node1.layer:
-            node2: NodeGene = choice(self.NodeGenes)
+            node2: NodeGene = choice(list(self.NodeGenes.values()))
 
         # Create a valid link or enabling an existing one
         link = LinkGene(node1.innovation, node2.innovation, LinkCount + 1)
-        if link in self.LinkGenes and link not in self.Disabled:
+        if link in self.LinkGenes.values() and link not in self.Disabled:
             self.m_add_link(depth-1)
-        elif link in self.LinkGenes:
+        elif link in self.LinkGenes.values():
+            link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
             self.Disabled.remove(link)
-            self.LinkGenes[self.LinkGenes.index(link)].enabled = True
+            self.LinkGenes[str(link.innovation)].enabled = True
         else:
-            LinkCount += 1
-
             # Checking if the link already exists in this generation and adding it to the existing link genes otherwise
-            if link in LinkGenes:
-                link.innovation = LinkGenes[LinkGenes.index(link)].innovation
+            if link in AllLinkGenes:
+                link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
             else:
-                LinkGenes.append(link)
+                AllLinkGenes.append(link)
+                LinkCount += 1
 
-            self.LinkGenes = self.LinkGenes + (link, )
+            self.LinkGenes[str(link.innovation)] = link
 
     def m_remove_node(self):
         # Choosing a node from a hidden layer

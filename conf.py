@@ -6,9 +6,9 @@ ConnectInputs: bool = True                      # Pre connect each input/bias ne
 BiasNeurons: bool = True                        # Allows bias neurons
 DefaultActivationFunction: str = "sigmoid"      # Default activation function for hidden layers
 
-MutationChances: dict[str, float] = {"weight": 100,
-                                     "remove_link": 0,
-                                     "add_link": 0,
+MutationChances: dict[str, float] = {"weight": 0,
+                                     "remove_link": 0.5,
+                                     "add_link": 0.5,
                                      "remove_node": 0,
                                      "add_node": 0,
                                      "activation": 0}
