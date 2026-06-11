@@ -31,9 +31,7 @@ class Individual:
     def forward(self, inputs: tuple[float | int] | list[float | int]):
         if isinstance(inputs, list):
             inputs = tuple(inputs)
-
         assert isinstance(inputs, tuple), "Unknown input format"
-
 
         if BiasNeurons:
             # Sets the value of the bias neuron to 1 if there is a bias neuron
@@ -64,10 +62,10 @@ class NEAT:
         for i in range(0, population_amount):
             self.population = self.population + (Genome(inputs, outputs))
 
-    def update(self, inputs: tuple[float | int]) -> None:
+    def update(self, inputs: tuple[float | int] | list[float | int]) -> None:
         """
         This function is responsible for training and handling everything the algorithm needs. This function should be called every program cycle.
-        :param inputs:
+        :param inputs: the inputs for the AI
         """
         raise NotImplementedError()
 
