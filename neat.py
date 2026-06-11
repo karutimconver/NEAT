@@ -28,7 +28,13 @@ class Individual:
         """
         self.fitness: int = func(self)
 
-    def forward(self, inputs: tuple[float | int]):
+    def forward(self, inputs: tuple[float | int] | list[float | int]):
+        if isinstance(inputs, list):
+            inputs = tuple(inputs)
+
+        assert isinstance(inputs, tuple), "Unknown input format"
+
+
         if BiasNeurons:
             # Sets the value of the bias neuron to 1 if there is a bias neuron
             inputs = (1, ) + inputs
