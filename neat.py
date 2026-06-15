@@ -1,14 +1,18 @@
 """
 This file contains the NEAT algorithm implementation
 """
-from random import choice
+from random import choice, random
+from copy import deepcopy, copy
+
+from numba.core.extending import overload
+
 from network import Network
 from gene import Genome
 from conf import *
 
 
 class Individual:
-    def __init__(self, inputs: int, outputs: int) -> None:
+    def __init__(self, inputs: int | Genome, outputs: int = None) -> None:
         """
         An individual of the simulation. it contains both a genotype and a phenotype as well as a fitness score to
         determine if it will reproduce or not.
@@ -16,7 +20,10 @@ class Individual:
         :param inputs: number of input nodes
         :param outputs: number of output nodes
         """
-        self.genome: Genome = Genome(inputs, outputs)
+        if outputs:
+            self.genome: Genome = Genome(inputs, outputs)
+        else:
+            self.genome: Genome = inputs
         self.network: Network = Network(self.genome.NodeGenes, self.genome.LinkGenes, inputs, outputs)
         self.fitness: None = None
 
@@ -74,5 +81,33 @@ class NEAT:
             individual.forward(inputs)
 
     def crossover(self, parent1: Individual, parent2: Individual) -> None:
+        fittest: Individual = parent1 if parent1.fitness > parent2 else parent2
+        if parent1.fitness == parent2.fitness:
+            fittest = choice([parent1, parent2])
+
+        other: Individual = parent1 if not parent1 is fittest else parent2
+
+        offspringNodeGenes: dict = {}
+        offspringLinkGenes: dict = {}
+        disabled: list = []
+
+        for gene in fittest.genome.NodeGenes:
+            if gene.innovation in other.genome.NodeGenes:
+                offspringNodeGenes[gene.innovation] = (copy(choice([gene, other.genome.NodeGenes[gene.innovation]])))
+            else:
+                offspringNodeGenes[gene.innovation] = copy(gene)
+
+        for gene in fittest.genome.LinkGenes:
+            if gene.innovation in other.genome.LinkGenes:
+                offspringLinkGenes[gene.innovation] = (copy(choice([gene, other.genome.LinkGenes[gene.innovation]])))
+            else:
+                offspringLinkGenes[gene.innovation] = copy(gene)
+            if not offspringLinkGenes[gene.innovation].enabled:
+                disabled.append(gene.innovation)
+
         # 25% chance of disabled genes be enabled
-        raise NotImplementedError()
+        for id in disabled:
+            if random() > ReenableGeneChance:
+                offspringLinkGenes[id].enabled = True
+
+        return

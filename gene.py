@@ -63,72 +63,76 @@ AllLinkGenes: list = list()      # All the link genes
 
 class Genome:
     # noinspection PyPep8Naming
-    def __init__(self, inputs: int, outputs: int) -> None:
-        self.NodeGenes: dict = dict()
-        self.LinkGenes: dict = dict()
-        self.Disabled: list = list()
-        self.NodeCount: int = 0
-
+    def __init__(self, inputs: int | dict, outputs: int | dict) -> None:
         """
         The Genome of an individual. This class creates an object containing the information to build a network.
 
-        :param inputs: number of input nodes
-        :param outputs: number of output nodes
+        :param inputs: number of input nodes   | alternativily is a dict with the NodeGenes
+        :param outputs: number of output nodes | alternativily is a dict with the LinkGenes
         """
         global NodeCount
         global LinkCount
-        self.inputs: int = inputs        # number of input nodes
-        self.outputs: int = outputs      # number of output nodes
+        self.NodeGenes: dict = {}
+        self.LinkGenes: dict = {}
+        self.Disabled: list = []
+        self.NodeCount: int = 0
 
-        # create the bias neuron if enabled
-        if BiasNeurons:
-            self.NodeGenes["1"] = NodeGene(1, 1)
-            self.NodeCount += 1
+        if isinstance(inputs, int) and isinstance(outputs, int):
+            self.inputs: int = inputs        # number of input nodes
+            self.outputs: int = outputs      # number of output nodes
 
-        # create input and output neurons
-        for i in range(0, self.inputs+self.outputs):
-            if i < self.inputs:
-                self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, 1)
-            else:
-                self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, -1)
+            # create the bias neuron if enabled
+            if BiasNeurons:
+                self.NodeGenes["1"] = NodeGene(1, 1)
+                self.NodeCount += 1
 
-            self.NodeCount += 1
-
-        # Pre connect bias neuron if bias enabled
-        if BiasNeurons:
-            for i in range(0, self.outputs):
-                NewGene = LinkGene(1, self.outputs+i+self.inputs, i + 1)      # Creating a new gene
-
-                # Check if the gene exists to avoid duplicates with different innovation numbers
-                if NewGene not in AllLinkGenes:
-                    LinkCount += 1
-                    AllLinkGenes.append(NewGene)
+            # create input and output neurons
+            for i in range(0, self.inputs+self.outputs):
+                if i < self.inputs:
+                    self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, 1)
                 else:
-                    NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
+                    self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, -1)
 
-                self.LinkGenes[str(NewGene.innovation)] = NewGene                    # Appending the new gene
+                self.NodeCount += 1
 
-        # Pre connect input neurons to output neurons if enabled
-        if ConnectInputs:
-            bias_neurons = self.NodeCount-self.outputs-self.inputs  # number of bias neurons
+            # Pre connect bias neuron if bias enabled
+            if BiasNeurons:
+                for i in range(0, self.outputs):
+                    NewGene = LinkGene(1, self.outputs+i+self.inputs, i + 1)      # Creating a new gene
 
-            for i in range(0+bias_neurons, self.inputs+bias_neurons):
-                # Create a new gene
-                NewGene = LinkGene(i+1, randint(1, self.outputs) + self.inputs + bias_neurons, LinkCount + 1)
+                    # Check if the gene exists to avoid duplicates with different innovation numbers
+                    if NewGene not in AllLinkGenes:
+                        LinkCount += 1
+                        AllLinkGenes.append(NewGene)
+                    else:
+                        NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
 
-                # Check if the gene exists to avoid duplicates with different innovation numbers
-                if NewGene not in AllLinkGenes:
-                    LinkCount += 1
-                    AllLinkGenes.append(NewGene)
-                else:
-                    NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
+                    self.LinkGenes[str(NewGene.innovation)] = NewGene                    # Appending the new gene
 
-                self.LinkGenes[str(NewGene.innovation)] = NewGene                       # Appending the new gene
+            # Pre connect input neurons to output neurons if enabled
+            if ConnectInputs:
+                bias_neurons = self.NodeCount-self.outputs-self.inputs  # number of bias neurons
 
-            self.inputs += bias_neurons
+                for i in range(0+bias_neurons, self.inputs+bias_neurons):
+                    # Create a new gene
+                    NewGene = LinkGene(i+1, randint(1, self.outputs) + self.inputs + bias_neurons, LinkCount + 1)
 
-        self.layers = 2
-        NodeCount = self.NodeCount
+                    # Check if the gene exists to avoid duplicates with different innovation numbers
+                    if NewGene not in AllLinkGenes:
+                        LinkCount += 1
+                        AllLinkGenes.append(NewGene)
+                    else:
+                        NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
+
+                    self.LinkGenes[str(NewGene.innovation)] = NewGene                       # Appending the new gene
+
+                self.inputs += bias_neurons
+
+            self.layers = 2
+            NodeCount = self.NodeCount
+
+        else:
+            raise NotImplementedError()
 
     def mutate(self, amount: int = 1) -> None:
         """
@@ -219,7 +223,7 @@ class Genome:
 
         for link in self.LinkGenes:
             if link.begin == node.innovation or link.end == node.innovation:
-                self.LinkGenes = tuple(l for l in self.LinkGenes if l != link)
+                self.LinkGenes = (l for l in self.LinkGenes if l != link)
 
         raise NotImplementedError("Remove node mutation not implemented")
 

@@ -14,3 +14,4 @@ MutationChances: dict[str, float] = {"weight": 0,
                                      "activation": 0}
 
 WeightPerturbingAmount = 0.3                    # How much can a weight be perturbed at most on a weight mutation
+ReenableGeneChance = .25
