@@ -80,7 +80,7 @@ class NEAT:
         for individual in self.population:
             individual.forward(inputs)
 
-    def crossover(self, parent1: Individual, parent2: Individual) -> None:
+    def crossover(self, parent1: Individual, parent2: Individual) -> tuple[Individual, Individual]:
         fittest: Individual = parent1 if parent1.fitness > parent2 else parent2
         if parent1.fitness == parent2.fitness:
             fittest = choice([parent1, parent2])
@@ -111,10 +111,13 @@ class NEAT:
                 offspringLinkGenes[id].enabled = True
                 disabled.remove(id)
 
-        genome1: Genome = Genome(offspringNodeGenes, offspringLinkGenes)
-        genome2: Genome = Genome(offspringNodeGenes, offspringLinkGenes)
+        genome1: Genome = Genome(offspringNodeGenes, offspringLinkGenes, copy(disabled))
+        genome2: Genome = Genome(offspringNodeGenes, offspringLinkGenes, copy(disabled))
 
         genome1.mutate(randint(0, MaxMutationPerCrossover))
         genome2.mutate(randint(0, MaxMutationPerCrossover))
 
-        return
+        child1 = Individual(genome1)
+        child2 = Individual(genome2)
+
+        return child1, child2

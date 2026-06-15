@@ -63,7 +63,7 @@ AllLinkGenes: list = list()      # All the link genes
 
 class Genome:
     # noinspection PyPep8Naming
-    def __init__(self, inputs: int | dict, outputs: int | dict) -> None:
+    def __init__(self, inputs: int | dict, outputs: int | dict, disabled: list = ()) -> None:
         """
         The Genome of an individual. This class creates an object containing the information to build a network.
 
@@ -74,7 +74,7 @@ class Genome:
         global LinkCount
         self.NodeGenes: dict = {}
         self.LinkGenes: dict = {}
-        self.Disabled: list = []
+        self.Disabled: list = list(disabled)
         self.NodeCount: int = 0
 
         if isinstance(inputs, int) and isinstance(outputs, int):
@@ -195,7 +195,7 @@ class Genome:
 
             # Create a valid link or enabling an existing one
             link = LinkGene(node1.innovation, node2.innovation, LinkCount + 1)
-            if link in self.LinkGenes.values() and link not in self.Disabled:
+            if link in self.LinkGenes.values() and link.innovation not in self.Disabled:
                 continue
             elif link in self.LinkGenes.values():
                 link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
