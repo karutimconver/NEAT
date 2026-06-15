@@ -132,7 +132,9 @@ class Genome:
             NodeCount = self.NodeCount
 
         else:
-            raise NotImplementedError()
+            self.NodeGenes = inputs
+            self.LinkGenes = outputs
+            self.NodeCount = len(self.NodeGenes)
 
     def mutate(self, amount: int = 1) -> None:
         """
@@ -145,30 +147,28 @@ class Genome:
         chances: tuple = tuple(MutationChances.values())
 
         # Choose a random mutation based on the relative chances
-        mutation: str = str(*choices(mutations, chances, k=1))
-        print(mutation)
+        for i in range(0, amount):
+            mutation: str = str(*choices(mutations, chances, k=1))
+            print(mutation)
 
-        match mutation:
-            case "weight":
-                self.m_weight()
+            match mutation:
+                case "weight":
+                    self.m_weight()
 
-            case "remove_link":
-                self.m_remove_link()
+                case "remove_link":
+                    self.m_remove_link()
 
-            case "add_link":
-                self.m_add_link()
+                case "add_link":
+                    self.m_add_link()
 
-            case "remove_node":
-                self.m_remove_node()
+                case "remove_node":
+                    self.m_remove_node()
 
-            case "add_node":
-                self.m_add_node()
+                case "add_node":
+                    self.m_add_node()
 
-            case "activation":
-                self.m_activation()
-
-        if amount > 1:
-            self.mutate(amount - 1)
+                case "activation":
+                    self.m_activation()
 
     def m_weight(self):
         gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
@@ -179,39 +179,41 @@ class Genome:
         if len(enabled) > 0:
             gene: LinkGene = choice(enabled)
             self.LinkGenes[str(gene.innovation)].enabled = False
-            self.Disabled.append(gene)
+            self.Disabled.append(gene.innovation)
 
-    def m_add_link(self, depth: int = 800):
-        if depth == 0:
-            raise RecursionError("Unable to create a new link. Depth limit exceeded!")
-
+    def m_add_link(self):
         global LinkCount
         # Choosing 2 valid nodes
-        node1: NodeGene = choice(list(self.NodeGenes.values()))
-        while node1.layer == -1:
+        for i in range(0, 800):
             node1: NodeGene = choice(list(self.NodeGenes.values()))
+            while node1.layer == -1:
+                node1: NodeGene = choice(list(self.NodeGenes.values()))
 
-        node2: NodeGene = choice(list(self.NodeGenes.values()))
-        while -1 < node2.layer <= node1.layer:
             node2: NodeGene = choice(list(self.NodeGenes.values()))
+            while -1 < node2.layer <= node1.layer:
+                node2: NodeGene = choice(list(self.NodeGenes.values()))
 
-        # Create a valid link or enabling an existing one
-        link = LinkGene(node1.innovation, node2.innovation, LinkCount + 1)
-        if link in self.LinkGenes.values() and link not in self.Disabled:
-            self.m_add_link(depth-1)
-        elif link in self.LinkGenes.values():
-            link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
-            self.Disabled.remove(link)
-            self.LinkGenes[str(link.innovation)].enabled = True
-        else:
-            # Checking if the link already exists in this generation and adding it to the existing link genes otherwise
-            if link in AllLinkGenes:
+            # Create a valid link or enabling an existing one
+            link = LinkGene(node1.innovation, node2.innovation, LinkCount + 1)
+            if link in self.LinkGenes.values() and link not in self.Disabled:
+                continue
+            elif link in self.LinkGenes.values():
                 link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
+                self.Disabled.remove(link.innovation)
+                self.LinkGenes[str(link.innovation)].enabled = True
+                return
             else:
-                AllLinkGenes.append(link)
-                LinkCount += 1
+                # Checking if the link already exists in this generation and adding it to the existing link genes otherwise
+                if link in AllLinkGenes:
+                    link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
+                else:
+                    AllLinkGenes.append(link)
+                    LinkCount += 1
 
-            self.LinkGenes[str(link.innovation)] = link
+                self.LinkGenes[str(link.innovation)] = link
+                return
+
+        print("\033[33mWarning: Unable to add link")
 
     def m_remove_node(self):
         # Choosing a node from a hidden layer

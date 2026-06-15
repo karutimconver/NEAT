@@ -1,7 +1,7 @@
 """
 This file contains the NEAT algorithm implementation
 """
-from random import choice, random
+from random import choice, random, randint
 from copy import deepcopy, copy
 
 from numba.core.extending import overload
@@ -93,13 +93,13 @@ class NEAT:
 
         for gene in fittest.genome.NodeGenes:
             if gene.innovation in other.genome.NodeGenes:
-                offspringNodeGenes[gene.innovation] = (copy(choice([gene, other.genome.NodeGenes[gene.innovation]])))
+                offspringNodeGenes[gene.innovation] = copy(choice([gene, other.genome.NodeGenes[gene.innovation]]))
             else:
                 offspringNodeGenes[gene.innovation] = copy(gene)
 
         for gene in fittest.genome.LinkGenes:
             if gene.innovation in other.genome.LinkGenes:
-                offspringLinkGenes[gene.innovation] = (copy(choice([gene, other.genome.LinkGenes[gene.innovation]])))
+                offspringLinkGenes[gene.innovation] = copy(choice([gene, other.genome.LinkGenes[gene.innovation]]))
             else:
                 offspringLinkGenes[gene.innovation] = copy(gene)
             if not offspringLinkGenes[gene.innovation].enabled:
@@ -109,5 +109,12 @@ class NEAT:
         for id in disabled:
             if random() > ReenableGeneChance:
                 offspringLinkGenes[id].enabled = True
+                disabled.remove(id)
+
+        genome1: Genome = Genome(offspringNodeGenes, offspringLinkGenes)
+        genome2: Genome = Genome(offspringNodeGenes, offspringLinkGenes)
+
+        genome1.mutate(randint(0, MaxMutationPerCrossover))
+        genome2.mutate(randint(0, MaxMutationPerCrossover))
 
         return
