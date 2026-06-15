@@ -98,7 +98,7 @@ class Genome:
             # Pre connect bias neuron if bias enabled
             if BiasNeurons:
                 for i in range(0, self.outputs):
-                    NewGene = LinkGene(1, self.outputs+i+self.inputs, i + 1)      # Creating a new gene
+                    NewGene = LinkGene(1, self.NodeCount - i, i + 1)      # Creating a new gene
 
                     # Check if the gene exists to avoid duplicates with different innovation numbers
                     if NewGene not in AllLinkGenes:
@@ -213,7 +213,7 @@ class Genome:
                 self.LinkGenes[str(link.innovation)] = link
                 return
 
-        print("\033[33mWarning: Unable to add link")
+        print("\033[33mWarning: Unable to add link\033[0m")
 
     def m_remove_node(self):
         # Choosing a node from a hidden layer
