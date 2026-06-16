@@ -5,11 +5,10 @@ from random import randint, seed, uniform, choices, choice
 from typing import Any
 from conf import *
 from activations import Activations
-seed()
 
 
 class LinkGene:
-    def __init__(self, begin: int, end: int, innovation: int, weight: [float | None] = None) -> None:
+    def __init__(self, begin: int, end: int, innovation: int, weight: float = 0) -> None:
         """
         A gene that encodes a connection.
 
@@ -171,7 +170,7 @@ class Genome:
                     self.m_activation()
 
     def m_weight(self):
-        gene: LinkGene = self.LinkGenes[str(randint(1, LinkCount))]
+        gene: LinkGene = self.LinkGenes[str(choice(self.LinkGenes))]
         self.LinkGenes[str(gene.innovation)].weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
 
     def m_remove_link(self):
@@ -221,11 +220,11 @@ class Genome:
         while node.layer == -1 or node.layer == 1:
             node: NodeGene = choice(self.NodeGenes)
 
-        self.NodeGenes = tuple(n for n in self.NodeGenes if n != node)
+        self.NodeGenes = {str(n.innovation): n for n in self.NodeGenes if n != node}
 
         for link in self.LinkGenes:
             if link.begin == node.innovation or link.end == node.innovation:
-                self.LinkGenes = (l for l in self.LinkGenes if l != link)
+                self.LinkGenes = {str(l[0]): l[1] for l in self.LinkGenes.items() if l != link}
 
         raise NotImplementedError("Remove node mutation not implemented")
 
@@ -240,14 +239,14 @@ class Genome:
         # Adding the node
         node: NodeGene = NodeGene(NodeCount + 1, self.NodeGenes[gene.begin - 1].layer + 1)
         NodeCount += 1
-        self.NodeGenes = self.NodeGenes + (node, )
+        self.NodeGenes[str(node.innovation)] = node
 
         # Adjust the links
         gene.enabled = False
-        self.Disabled.append(gene)
-        self.LinkGenes = self.LinkGenes + (LinkGene(gene.begin, node.innovation, LinkCount + 1, 1), )
+        self.Disabled.append(gene) # CONVERTS TO TUPLE
+        self.LinkGenes[str(LinkCount + 1)] = LinkGene(gene.begin, node.innovation, LinkCount + 1, 1)
         LinkCount += 1
-        self.LinkGenes = self.LinkGenes + (LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight), )
+        self.LinkGenes[str(LinkCount + 1)] = LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight)
         LinkCount += 1
 
     def m_activation(self):

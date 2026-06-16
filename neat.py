@@ -4,8 +4,6 @@ This file contains the NEAT algorithm implementation
 from random import choice, random, randint
 from copy import deepcopy, copy
 
-from numba.core.extending import overload
-
 from network import Network
 from gene import Genome
 from conf import *
@@ -25,7 +23,7 @@ class Individual:
         else:
             self.genome: Genome = inputs
         self.network: Network = Network(self.genome.NodeGenes, self.genome.LinkGenes, inputs, outputs)
-        self.fitness: None = None
+        self.fitness: int = 0
 
     def evaluate(self, func) -> None:
         """
@@ -60,14 +58,14 @@ class NEAT:
         :param population_amount: the amount of individuals per generation
         :param generations: the max number of generations
         """
-        self.inputs: int = inputs               # number of inputs
-        self.outputs: int = outputs             # number of outputs
+        self.inputs: int = inputs                # number of inputs
+        self.outputs: int = outputs              # number of outputs
         self.generation: int = 1                 # current generation
         self.max_generation: int = generations   # max number of generations
 
         # initializing the population
         for i in range(0, population_amount):
-            self.population = self.population + (Genome(inputs, outputs))
+            self.population = self.population + (Individual(inputs, outputs), )
 
     def update(self, inputs: tuple[float | int] | list[float | int]) -> None:
         """
@@ -81,7 +79,7 @@ class NEAT:
             individual.forward(inputs)
 
     def crossover(self, parent1: Individual, parent2: Individual) -> tuple[Individual, Individual]:
-        fittest: Individual = parent1 if parent1.fitness > parent2 else parent2
+        fittest: Individual = parent1 if parent1.fitness > parent2.fitness else parent2
         if parent1.fitness == parent2.fitness:
             fittest = choice([parent1, parent2])
 
@@ -91,14 +89,14 @@ class NEAT:
         offspringLinkGenes: dict = {}
         disabled: list = []
 
-        for gene in fittest.genome.NodeGenes:
-            if gene.innovation in other.genome.NodeGenes:
+        for gene in fittest.genome.NodeGenes.values():
+            if gene.innovation in other.genome.NodeGenes.values():
                 offspringNodeGenes[gene.innovation] = copy(choice([gene, other.genome.NodeGenes[gene.innovation]]))
             else:
                 offspringNodeGenes[gene.innovation] = copy(gene)
 
-        for gene in fittest.genome.LinkGenes:
-            if gene.innovation in other.genome.LinkGenes:
+        for gene in fittest.genome.LinkGenes.values():
+            if gene.innovation in other.genome.LinkGenes.values():
                 offspringLinkGenes[gene.innovation] = copy(choice([gene, other.genome.LinkGenes[gene.innovation]]))
             else:
                 offspringLinkGenes[gene.innovation] = copy(gene)
