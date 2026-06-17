@@ -109,10 +109,11 @@ class NEAT:
                 offspringLinkGenes[id].enabled = True
                 disabled.remove(id)
 
-        genome1: Genome = Genome(offspringNodeGenes, offspringLinkGenes, copy(disabled))
-        genome2: Genome = Genome(offspringNodeGenes, offspringLinkGenes, copy(disabled))
+        genome1: Genome = Genome(deepcopy(offspringNodeGenes), deepcopy(offspringLinkGenes), copy(disabled))
+        genome2: Genome = Genome(deepcopy(offspringNodeGenes), deepcopy(offspringLinkGenes), copy(disabled))
 
         genome1.mutate(randint(0, MaxMutationPerCrossover))
+        print("first mutation done!")
         genome2.mutate(randint(0, MaxMutationPerCrossover))
 
         child1 = Individual(genome1)

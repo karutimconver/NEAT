@@ -88,9 +88,9 @@ class Genome:
             # create input and output neurons
             for i in range(0, self.inputs+self.outputs):
                 if i < self.inputs:
-                    self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, 1)
+                    self.NodeGenes[self.NodeCount + 1] = NodeGene(self.NodeCount + 1, 1)
                 else:
-                    self.NodeGenes[str(self.NodeCount + 1)] = NodeGene(self.NodeCount + 1, -1)
+                    self.NodeGenes[self.NodeCount + 1] = NodeGene(self.NodeCount + 1, -1)
 
                 self.NodeCount += 1
 
@@ -106,7 +106,7 @@ class Genome:
                     else:
                         NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
 
-                    self.LinkGenes[str(NewGene.innovation)] = NewGene                    # Appending the new gene
+                    self.LinkGenes[NewGene.innovation] = NewGene                    # Appending the new gene
 
             # Pre connect input neurons to output neurons if enabled
             if ConnectInputs:
@@ -123,7 +123,7 @@ class Genome:
                     else:
                         NewGene.innovation = AllLinkGenes[AllLinkGenes.index(NewGene)].innovation
 
-                    self.LinkGenes[str(NewGene.innovation)] = NewGene                       # Appending the new gene
+                    self.LinkGenes[NewGene.innovation] = NewGene                       # Appending the new gene
 
                 self.inputs += bias_neurons
 
@@ -170,15 +170,15 @@ class Genome:
                     self.m_activation()
 
     def m_weight(self):
-        gene: LinkGene = self.LinkGenes[str(choice(self.LinkGenes))]
-        self.LinkGenes[str(gene.innovation)].weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
+        gene: LinkGene = self.LinkGenes[choice(tuple(self.LinkGenes.keys()))]
+        self.LinkGenes[gene.innovation].weight += uniform(-WeightPerturbingAmount, WeightPerturbingAmount)
 
     def m_remove_link(self):
-        enabled = [gene for n, gene in self.LinkGenes.items() if gene.enabled]
+        enabled = [n for n, gene in self.LinkGenes.items() if gene.enabled]
         if len(enabled) > 0:
             gene: LinkGene = choice(enabled)
-            self.LinkGenes[str(gene.innovation)].enabled = False
-            self.Disabled.append(gene.innovation)
+            self.LinkGenes[gene].enabled = False
+            self.Disabled.append(gene)
 
     def m_add_link(self):
         global LinkCount
@@ -199,7 +199,7 @@ class Genome:
             elif link in self.LinkGenes.values():
                 link.innovation = AllLinkGenes[AllLinkGenes.index(link)].innovation
                 self.Disabled.remove(link.innovation)
-                self.LinkGenes[str(link.innovation)].enabled = True
+                self.LinkGenes[link.innovation].enabled = True
                 return
             else:
                 # Checking if the link already exists in this generation and adding it to the existing link genes otherwise
@@ -209,7 +209,7 @@ class Genome:
                     AllLinkGenes.append(link)
                     LinkCount += 1
 
-                self.LinkGenes[str(link.innovation)] = link
+                self.LinkGenes[link.innovation] = link
                 return
 
         print("\033[33mWarning: Unable to add link\033[0m")
@@ -220,11 +220,11 @@ class Genome:
         while node.layer == -1 or node.layer == 1:
             node: NodeGene = choice(self.NodeGenes)
 
-        self.NodeGenes = {str(n.innovation): n for n in self.NodeGenes if n != node}
+        self.NodeGenes = {n.innovation: n for n in self.NodeGenes if n != node}
 
         for link in self.LinkGenes:
             if link.begin == node.innovation or link.end == node.innovation:
-                self.LinkGenes = {str(l[0]): l[1] for l in self.LinkGenes.items() if l != link}
+                self.LinkGenes = {l[0]: l[1] for l in self.LinkGenes.items() if l != link}
 
         raise NotImplementedError("Remove node mutation not implemented")
 
@@ -237,16 +237,16 @@ class Genome:
             gene: LinkGene = choice(self.LinkGenes)
 
         # Adding the node
-        node: NodeGene = NodeGene(NodeCount + 1, self.NodeGenes[gene.begin - 1].layer + 1)
+        node: NodeGene = NodeGene(NodeCount + 1, self.NodeGenes[gene.begin].layer + 1)
         NodeCount += 1
-        self.NodeGenes[str(node.innovation)] = node
+        self.NodeGenes[node.innovation] = node
 
         # Adjust the links
         gene.enabled = False
         self.Disabled.append(gene) # CONVERTS TO TUPLE
-        self.LinkGenes[str(LinkCount + 1)] = LinkGene(gene.begin, node.innovation, LinkCount + 1, 1)
+        self.LinkGenes[LinkCount + 1] = LinkGene(gene.begin, node.innovation, LinkCount + 1, 1)
         LinkCount += 1
-        self.LinkGenes[str(LinkCount + 1)] = LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight)
+        self.LinkGenes[LinkCount + 1] = LinkGene(node.innovation, gene.end, LinkCount + 1, gene.weight)
         LinkCount += 1
 
     def m_activation(self):

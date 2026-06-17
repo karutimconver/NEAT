@@ -1,1 +1,3 @@
 corrigir as funções de mutação que usam tuplas
+
+corrigir a função remove node.
