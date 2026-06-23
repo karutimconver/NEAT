@@ -62,7 +62,7 @@ AllLinkGenes: list = list()      # All the link genes
 
 class Genome:
     # noinspection PyPep8Naming
-    def __init__(self, inputs: int | dict, outputs: int | dict, disabled: list = ()) -> None:
+    def __init__(self, inputs: int, outputs: int, disabled: list = (), nodeGenes: dict = None, linkGenes: dict = None) -> None:
         """
         The Genome of an individual. This class creates an object containing the information to build a network.
 
@@ -71,12 +71,12 @@ class Genome:
         """
         global NodeCount
         global LinkCount
-        self.NodeGenes: dict = {}
-        self.LinkGenes: dict = {}
+        self.NodeGenes: dict = nodeGenes if nodeGenes is not None else {}
+        self.LinkGenes: dict = linkGenes if nodeGenes is not None else {}
         self.Disabled: list = list(disabled)
         self.NodeCount: int = 0
 
-        if isinstance(inputs, int) and isinstance(outputs, int):
+        if not (isinstance(nodeGenes, dict) and isinstance(linkGenes, dict)):
             self.inputs: int = inputs        # number of input nodes
             self.outputs: int = outputs      # number of output nodes
 
@@ -131,8 +131,8 @@ class Genome:
             NodeCount = self.NodeCount
 
         else:
-            self.NodeGenes = inputs
-            self.LinkGenes = outputs
+            self.inputs = inputs
+            self.outputs = outputs
             self.NodeCount = len(self.NodeGenes)
 
     def mutate(self, amount: int = 1) -> None:
@@ -216,11 +216,14 @@ class Genome:
 
     def m_remove_node(self):
         # Choosing a node from a hidden layer
-        node: NodeGene = choice(self.NodeGenes)
+        if self.NodeCount <= BiasNeurons + self.inputs + self.outputs:
+            print("\033[33mWarning: Unable to remove node. Only inputs and outputs found\033[0m")
+            return
+        node: NodeGene = choice(tuple(self.NodeGenes.values()))
         while node.layer == -1 or node.layer == 1:
-            node: NodeGene = choice(self.NodeGenes)
+            node: NodeGene = choice(tuple(self.NodeGenes.values()))
 
-        self.NodeGenes = {n.innovation: n for n in self.NodeGenes if n != node}
+        self.NodeGenes = {n.innovation: n for n in self.NodeGenes.values() if n != node}
 
         for link in self.LinkGenes:
             if link.begin == node.innovation or link.end == node.innovation:
